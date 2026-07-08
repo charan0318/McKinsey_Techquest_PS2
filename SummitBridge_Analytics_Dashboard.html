@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SummitBridge Health Plan | Analytics Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy:#0b3d5c;
+  --blue-deep:#0e4f7a;
+  --blue:#1670a8;
+  --blue-mid:#2f8fc4;
+  --blue-light:#e7f2f9;
+  --green-deep:#1f7a5c;
+  --green:#2ba178;
+  --green-mid:#4fb896;
+  --green-light:#e6f6f0;
+  --amber:#c9862c;
+  --red:#b8433f;
+  --ink:#16232e;
+  --ink-soft:#4a5a68;
+  --line:#dde6ec;
+  --bg:#f4f8fa;
+  --card:#ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Segoe UI',Arial,sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+}
+/* ---------- Header ---------- */
+.topbar{
+  background:linear-gradient(120deg,var(--navy) 0%,var(--blue-deep) 55%,var(--green-deep) 130%);
+  color:#fff;
+  padding:22px 32px;
+}
+.topbar-inner{
+  max-width:1500px;margin:0 auto;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;
+}
+.brand{display:flex;align-items:center;gap:14px;}
+.brand-mark{
+  width:46px;height:46px;border-radius:10px;
+  background:rgba(255,255,255,0.14);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:18px;letter-spacing:0.5px;
+  border:1px solid rgba(255,255,255,0.25);
+}
+.brand h1{font-size:21px;font-weight:700;letter-spacing:0.2px;}
+.brand p{font-size:12px;opacity:0.85;margin-top:2px;}
+.top-meta{display:flex;gap:26px;flex-wrap:wrap;}
+.top-meta div{text-align:right;}
+.top-meta .label{font-size:10px;text-transform:uppercase;letter-spacing:0.6px;opacity:0.75;}
+.top-meta .value{font-size:15px;font-weight:700;}
+
+/* ---------- Nav tabs ---------- */
+.nav{
+  background:#fff;border-bottom:1px solid var(--line);
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 6px rgba(11,61,92,0.05);
+}
+.nav-inner{max-width:1500px;margin:0 auto;display:flex;gap:4px;padding:0 32px;overflow-x:auto;}
+.nav-btn{
+  border:none;background:none;padding:16px 18px;font-size:13.5px;font-weight:600;
+  color:var(--ink-soft);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;
+  transition:color .15s,border-color .15s;
+}
+.nav-btn:hover{color:var(--blue);}
+.nav-btn.active{color:var(--blue-deep);border-bottom-color:var(--green);}
+
+/* ---------- Layout ---------- */
+.wrap{max-width:1500px;margin:0 auto;padding:26px 32px 60px;}
+.section{display:none;}
+.section.active{display:block;animation:fade .25s ease;}
+@keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+.section-title{
+  font-size:19px;font-weight:700;color:var(--navy);
+  margin:30px 0 14px;padding-bottom:8px;border-bottom:2px solid var(--line);
+  display:flex;align-items:center;gap:10px;
+}
+.section-title:first-child{margin-top:0;}
+.section-title .dot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;}
+.section-sub{font-size:12.5px;color:var(--ink-soft);margin:-8px 0 16px;}
+
+/* ---------- KPI cards ---------- */
+.kpi-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:14px;
+}
+@media (max-width:980px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:520px){.kpi-grid{grid-template-columns:1fr;}}
+.kpi-card{
+  background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:16px 18px;border-top:4px solid var(--blue);position:relative;
+}
+.kpi-card.green{border-top-color:var(--green);}
+.kpi-card.amber{border-top-color:var(--amber);}
+.kpi-card.red{border-top-color:var(--red);}
+.kpi-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--ink-soft);}
+.kpi-value{font-size:26px;font-weight:800;color:var(--ink);margin-top:6px;}
+.kpi-sub{font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+.kpi-badge{
+  position:absolute;top:14px;right:14px;font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:10px;
+}
+.badge-ontrack{background:var(--green-light);color:var(--green-deep);}
+.badge-watch{background:#fdf1de;color:var(--amber);}
+.badge-red{background:#fbe6e5;color:var(--red);}
+
+/* ---------- Grid of panels ---------- */
+.panel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:16px;}
+.panel-grid.grid-3{grid-template-columns:repeat(3,1fr);}
+@media (max-width:900px){.panel-grid,.panel-grid.grid-3{grid-template-columns:1fr;}}
+.panel{
+  background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px 8px;
+}
+.panel.full{grid-column:1/-1;}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;flex-wrap:wrap;gap:6px;}
+.panel-head h3{font-size:14.5px;font-weight:700;color:var(--navy);}
+.panel-head span{font-size:11px;color:var(--ink-soft);}
+.chart-box{position:relative;height:280px;}
+.chart-box.tall{height:340px;}
+.chart-box.short{height:230px;}
+
+/* ---------- Filters ---------- */
+.filterbar{
+  background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:14px 18px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:18px;
+}
+.filterbar label{font-size:11px;font-weight:700;color:var(--blue-deep);text-transform:uppercase;letter-spacing:0.4px;margin-right:6px;}
+.filterbar select{
+  padding:7px 10px;border:1.5px solid var(--line);border-radius:6px;font-size:12.5px;
+  font-family:inherit;color:var(--ink);background:#fff;cursor:pointer;
+}
+.filterbar select:focus{outline:none;border-color:var(--blue);}
+.filter-note{font-size:11px;color:var(--ink-soft);margin-left:auto;}
+.filterbar .btn{
+  padding:8px 16px;border-radius:6px;font-size:12.5px;font-weight:700;
+  font-family:inherit;cursor:pointer;border:1.5px solid transparent;
+}
+.filterbar .btn-apply{background:var(--blue-mid);color:#fff;}
+.filterbar .btn-apply:hover{background:var(--blue);}
+.filterbar .btn-reset{background:var(--blue-light);color:var(--blue-mid);border-color:var(--blue-light);}
+.filterbar .btn-reset:hover{background:#dcecf5;}
+
+/* ---------- Tables ---------- */
+table.data{width:100%;border-collapse:collapse;font-size:12.5px;}
+table.data th{
+  text-align:left;background:var(--blue-light);color:var(--blue-deep);
+  padding:9px 10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;
+  border-bottom:2px solid var(--line);
+}
+table.data td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--ink);}
+table.data tr:hover td{background:#fafcfd;}
+.tag{padding:2px 9px;border-radius:9px;font-size:10.5px;font-weight:700;}
+.tag-green{background:var(--green-light);color:var(--green-deep);}
+.tag-amber{background:#fdf1de;color:var(--amber);}
+.tag-red{background:#fbe6e5;color:var(--red);}
+
+/* ---------- Insight callouts ---------- */
+.callout{
+  border-left:4px solid var(--green);background:var(--green-light);
+  padding:12px 16px;border-radius:0 8px 8px 0;font-size:12.5px;color:#1a4032;margin-top:12px;line-height:1.55;
+}
+.callout.blue{border-left-color:var(--blue);background:var(--blue-light);color:#0d3c57;}
+.callout b{color:inherit;}
+
+/* ---------- Scenario cards ---------- */
+.scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:14px;}
+.scenario-card{
+  border:1px solid var(--line);border-radius:10px;padding:18px;background:#fff;
+  border-top:4px solid var(--blue);
+}
+.scenario-card.mid{border-top-color:var(--blue-mid);}
+.scenario-card.high{border-top-color:var(--green);}
+.scenario-card h4{font-size:13px;text-transform:uppercase;letter-spacing:0.4px;color:var(--ink-soft);font-weight:700;}
+.scenario-card .amt{font-size:25px;font-weight:800;color:var(--navy);margin:8px 0 2px;}
+.scenario-card .pct{font-size:12px;color:var(--green-deep);font-weight:700;margin-bottom:10px;}
+.scenario-card ul{list-style:none;font-size:11.8px;color:var(--ink-soft);}
+.scenario-card li{padding:3px 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;}
+.scenario-card li:last-child{border-bottom:none;}
+
+/* ---------- Footer ---------- */
+.footer{max-width:1500px;margin:10px auto 0;padding:18px 32px;color:var(--ink-soft);font-size:11.5px;border-top:1px solid var(--line);text-align:center;}
+
+@media (max-width:720px){
+  .panel-grid{grid-template-columns:1fr;}
+  .scenario-grid{grid-template-columns:1fr;}
+  .top-meta{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">SB</div>
+      <div>
+        <h1>SummitBridge Health Plan</h1>
+        <p>Healthcare Analytics &amp; Cost Management Dashboard — Plan Year 2024</p>
+      </div>
+    </div>
+    <div class="top-meta">
+      <div><div class="label">Covered Lives</div><div class="value">~420,000</div></div>
+      <div><div class="label">Total Allowed Spend</div><div class="value">$11.32M</div></div>
+      <div><div class="label">Sample Members</div><div class="value">800</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-inner" id="navTabs">
+    <button class="nav-btn active" data-tab="overview">Executive Overview</button>
+    <button class="nav-btn" data-tab="highcost">High-Cost &amp; Specialty Rx</button>
+    <button class="nav-btn" data-tab="utilization">Avoidable Utilization</button>
+    <button class="nav-btn" data-tab="retention">Retention &amp; Network</button>
+    <button class="nav-btn" data-tab="quality">Provider Quality</button>
+    <button class="nav-btn" data-tab="savings">Savings &amp; KPI Framework</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============ OVERVIEW ============ -->
+  <div class="section active" id="overview">
+
+    <div class="filterbar">
+      <div><label>Line of Business</label>
+        <select id="lobFilter">
+          <option value="all">All LOBs</option>
+          <option value="Marketplace">Marketplace</option>
+          <option value="Medicare Advantage">Medicare Advantage</option>
+          <option value="Commercial">Commercial</option>
+          <option value="Medicaid">Medicaid</option>
+        </select>
+      </div>
+      <div><label>State</label>
+        <select id="stateFilter">
+          <option value="all">All States</option>
+          <option value="GA">Georgia</option>
+          <option value="KY">Kentucky</option>
+          <option value="NC">North Carolina</option>
+          <option value="TN">Tennessee</option>
+        </select>
+      </div>
+      <div><label>Service Category</label>
+        <select id="categoryFilter">
+          <option value="all">All Categories</option>
+          <option value="Inpatient">Inpatient</option>
+          <option value="Professional">Professional</option>
+          <option value="Specialty Rx">Specialty Rx</option>
+          <option value="ED">ED</option>
+          <option value="Urgent Care">Urgent Care</option>
+        </select>
+      </div>
+      <div><label>Date Range</label>
+        <select id="dateFilter">
+          <option value="all">All Time</option>
+          <option value="7">Last 7 Days</option>
+          <option value="30">Last 30 Days</option>
+          <option value="60">Last 60 Days</option>
+          <option value="90">Last 90 Days</option>
+          <option value="custom">Custom Range</option>
+        </select>
+      </div>
+      <button class="btn btn-apply" id="applyFiltersBtn">Apply Filters</button>
+      <button class="btn btn-reset" id="resetFiltersBtn">Reset</button>
+      <div class="filter-note">Filters apply to the spend and category views below. Figures are computed directly from the claims, enrollment, provider and member-months files.</div>
+    </div>
+
+    <div class="section-title"><span class="dot"></span>Plan-Wide Snapshot</div>
+    <div class="kpi-grid" id="kpiOverview"></div>
+
+    <div class="panel-grid">
+      <div class="panel">
+        <div class="panel-head"><h3>Allowed Spend by Service Category</h3><span id="catSpan"></span></div>
+        <div class="chart-box"><canvas id="chartCategory"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Allowed Spend by Line of Business</h3><span>Annual, $</span></div>
+        <div class="chart-box"><canvas id="chartLob"></canvas></div>
+      </div>
+      <div class="panel full">
+        <div class="panel-head"><h3>Service Category Spend Across Lines of Business</h3><span>Stacked, $</span></div>
+        <div class="chart-box tall"><canvas id="chartStack"></canvas></div>
+      </div>
+    </div>
+
+    <div class="callout blue"><b>Reading this view:</b> Inpatient care is the dominant cost driver across every line of business, consistent with the concentration seen in the high-cost claimant analysis. Specialty pharmacy spend is proportionally highest in Medicare Advantage, while ED spend is proportionally highest in Marketplace.</div>
+  </div>
+
+  <!-- ============ HIGH COST ============ -->
+  <div class="section" id="highcost">
+    <div class="section-title"><span class="dot"></span>High-Cost Claimant Concentration</div>
+    <div class="section-sub">Top 5% of members ranked by annual allowed spend (95th percentile threshold)</div>
+    <div class="kpi-grid" id="kpiHighCost"></div>
+
+    <div class="panel-grid">
+      <div class="panel">
+        <div class="panel-head"><h3>Spend Concentration — Top 5% vs. Remaining 95%</h3></div>
+        <div class="chart-box"><canvas id="chartHcShare"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>High-Cost Spend by Service Category</h3></div>
+        <div class="chart-box"><canvas id="chartHcCat"></canvas></div>
+      </div>
+    </div>
+
+    <div class="callout"><b>Finding:</b> The top 40 members (5% of the plan) account for $2.32M of spend — 20.5% of total allowed amount — at an average of $57,933/member versus $14,152 plan-wide, a 4.1x concentration ratio. 85% of this group's spend sits in inpatient care, confirming that intensive care management and post-discharge transition support are the highest-leverage interventions for this cohort.</div>
+
+    <div class="section-title"><span class="dot"></span>Specialty Pharmacy Deep Dive</div>
+    <div class="section-sub">$791,233 total specialty pharmacy spend across 407 members, 657 claims</div>
+
+    <div class="panel-grid">
+      <div class="panel">
+        <div class="panel-head"><h3>Specialty Pharmacy Spend by Drug</h3></div>
+        <div class="chart-box"><canvas id="chartDrug"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Specialty Pharmacy Savings Scenarios</h3></div>
+        <div class="chart-box"><canvas id="chartSpecSavings"></canvas></div>
+      </div>
+    </div>
+
+    <table class="data" style="margin-top:16px;">
+      <thead><tr><th>Drug</th><th>Therapeutic Class</th><th>Claims</th><th>Members</th><th>Total Allowed</th><th>Avg / Claim</th></tr></thead>
+      <tbody id="drugTable"></tbody>
+    </table>
+  </div>
+
+  <!-- ============ UTILIZATION ============ -->
+  <div class="section" id="utilization">
+    <div class="section-title"><span class="dot"></span>Emergency Department Utilization</div>
+    <div class="kpi-grid" id="kpiEd"></div>
+
+    <div class="panel-grid">
+      <div class="panel">
+        <div class="panel-head"><h3>ED Visits by Avoidability Category</h3></div>
+        <div class="chart-box"><canvas id="chartEdCat"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Cost per Setting: ED vs. Urgent Care</h3></div>
+        <div class="chart-box"><canvas id="chartEdVsUc"></canvas></div>
+      </div>
+      <div class="panel full">
+        <div class="panel-head"><h3>Top Avoidable ED Diagnoses</h3><span>By visit count</span></div>
+        <div class="chart-box tall"><canvas id="chartTopDx"></canvas></div>
+      </div>
+    </div>
+
+    <div class="callout"><b>Finding:</b> 914 of 1,209 ED visits (75.6%) are classified as Avoidable or Potentially Avoidable, representing $1.03M in allowed spend. The leading diagnoses — acute respiratory infection, reflux, low back pain, abdominal pain and UTI — are routinely manageable in a primary care or urgent care setting at a fraction of ED cost ($134.70 avg. urgent care vs. $1,124.27 avg. avoidable ED visit).</div>
+
+    <div class="section-title"><span class="dot"></span>Behavioral Health Comorbidity Impact</div>
+    <div class="panel-grid">
+      <div class="panel">
+        <div class="panel-head"><h3>Utilization Rate: Members With vs. Without a BH Claim</h3><span>Visits per member</span></div>
+        <div class="chart-box"><canvas id="chartBh"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>30-Day Readmission Rate by Line of Business</h3></div>
+        <div class="chart-box"><canvas id="chartReadmit"></canvas></div>
+      </div>
+    </div>
+    <div class="callout blue"><b>Finding:</b> Members with a behavioral health claim run higher average total allowed spend ($14,953 vs. $13,486) and a meaningfully higher ED visit rate (1.83 vs. 1.24 visits/member) than members without a BH claim, supporting the case for integrated behavioral health / primary care collaborative care.</div>
+  </div>
+
+  <!-- ============ RETENTION ============ -->
+  <div class="section" id="retention">
+    <div class="section-title"><span class="dot"></span>Member Retention</div>
+    <div class="kpi-grid" id="kpiRetention"></div>
+
+    <div class="panel-grid grid-2">
+      <div class="panel">
+        <div class="panel-head"><h3>Disenrollment Reasons</h3></div>
+        <div class="chart-box"><canvas id="chartDisenrollReason"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Disenrollment Rate by Line of Business</h3></div>
+        <div class="chart-box"><canvas id="chartDisenrollLob"></canvas></div>
+      </div>
+    </div>
+    <div class="panel-grid grid-2">
+      <div class="panel">
+        <div class="panel-head"><h3>Disenrollment Rate by State</h3></div>
+        <div class="chart-box short"><canvas id="chartDisenrollState"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>PMPM: Disenrolled vs. Retained Members</h3></div>
+        <div class="chart-box short"><canvas id="chartPmpmDisenroll"></canvas></div>
+      </div>
+    </div>
+
+    <div class="callout"><b>Finding:</b> Annual disenrollment stands at 11.6%, against a target of under 8%. Premium affordability (28.0%) and network adequacy / access issues (43.0% combined) drive the majority of exits. Disenrolled members run higher average PMPM ($1,769.90) than retained members ($1,302.13), meaning the plan is losing members who are already costlier to serve — access and affordability fixes here double as a retention and cost play.</div>
+
+    <div class="section-title"><span class="dot"></span>Network Adequacy</div>
+    <div class="panel full" style="margin-top:14px;">
+      <div class="panel-head"><h3>Members per In-Network Provider, Top 10 Counties</h3><span>Lower is better</span></div>
+      <div class="chart-box tall"><canvas id="chartNetwork"></canvas></div>
+    </div>
+    <div class="callout blue"><b>Finding:</b> Fulton and Cherokee counties in Georgia, and Franklin and Cuyahoga counties in Ohio, show the highest member-to-provider ratios in the network, well above the panel-adequacy benchmarks used elsewhere in this analysis. These are the priority markets for PCP recruitment.</div>
+  </div>
+
+  <!-- ============ QUALITY ============ -->
+  <div class="section" id="quality">
+    <div class="section-title"><span class="dot"></span>Provider Quality vs. Cost — Risk Adjustment</div>
+    <div class="section-sub">Testing whether higher PCP quality scores correlate with higher cost, before and after adjusting for member risk score</div>
+
+    <div class="panel-grid">
+      <div class="panel">
+        <div class="panel-head"><h3>Raw Member PMPM by Attributed PCP Quality Score</h3></div>
+        <div class="chart-box"><canvas id="chartQualityRaw"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Risk-Adjusted PMPM by Attributed PCP Quality Score</h3></div>
+        <div class="chart-box"><canvas id="chartQualityAdj"></canvas></div>
+      </div>
+    </div>
+
+    <div class="callout"><b>Finding:</b> Raw PMPM does not increase cleanly with PCP quality score — the relationship is irregular and driven mainly by which risk pool each PCP happens to carry. Once PMPM is divided by each member's risk score, the pattern flattens further, confirming that a single blended PMPM number is not a reliable stand-alone measure of provider performance without controlling for line of business and case mix.</div>
+
+    <table class="data" style="margin-top:18px;">
+      <thead><tr><th>Quality Score</th><th>Members</th><th>Avg Risk Score</th><th>Raw PMPM</th><th>Risk-Adjusted PMPM</th></tr></thead>
+      <tbody id="qualityTable"></tbody>
+    </table>
+  </div>
+
+  <!-- ============ SAVINGS ============ -->
+  <div class="section" id="savings">
+    <div class="section-title"><span class="dot"></span>Combined Savings Scenarios</div>
+    <div class="section-sub">Built by layering specialty pharmacy reduction, ED-to-urgent-care shift, high-cost care management, readmission prevention, and OON leakage recovery</div>
+
+    <div class="scenario-grid">
+      <div class="scenario-card">
+        <h4>Conservative</h4>
+        <div class="amt">$464,966</div>
+        <div class="pct">4.1% of total allowed spend</div>
+        <ul>
+          <li><span>Specialty Rx −10%</span><span>$79,123</span></li>
+          <li><span>ED shift 20%</span><span>$180,894</span></li>
+          <li><span>High-cost care mgmt −5%</span><span>$115,865</span></li>
+          <li><span>Readmission −20%</span><span>$54,400</span></li>
+          <li><span>OON recovery −25%</span><span>$34,684</span></li>
+        </ul>
+      </div>
+      <div class="scenario-card mid">
+        <h4>Moderate</h4>
+        <div class="amt">$735,387</div>
+        <div class="pct">6.5% of total allowed spend</div>
+        <ul>
+          <li><span>Specialty Rx −12%</span><span>$94,948</span></li>
+          <li><span>ED shift 30%</span><span>$271,341</span></li>
+          <li><span>High-cost care mgmt −10%</span><span>$231,730</span></li>
+          <li><span>Readmission −25%</span><span>$68,000</span></li>
+          <li><span>OON recovery −50%</span><span>$69,367</span></li>
+        </ul>
+      </div>
+      <div class="scenario-card high">
+        <h4>Aggressive</h4>
+        <div class="amt">$1,013,720</div>
+        <div class="pct">9.0% of total allowed spend</div>
+        <ul>
+          <li><span>Specialty Rx −15%</span><span>$118,685</span></li>
+          <li><span>ED shift 40%</span><span>$361,788</span></li>
+          <li><span>High-cost care mgmt −15%</span><span>$347,596</span></li>
+          <li><span>Readmission −30%</span><span>$81,600</span></li>
+          <li><span>OON recovery −75%</span><span>$104,051</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel full" style="margin-top:18px;">
+      <div class="panel-head"><h3>Annual Savings by Intervention Lever</h3><span>Moderate scenario, $</span></div>
+      <div class="chart-box tall"><canvas id="chartSavingsBreakdown"></canvas></div>
+    </div>
+
+    <div class="section-title"><span class="dot"></span>KPI Monitoring Framework</div>
+    <div class="section-sub">20 KPIs across 9 domains — monthly / quarterly review cadence with escalation thresholds at 10% (watch) and 15% (critical) variance from target</div>
+
+    <table class="data">
+      <thead><tr><th>Domain</th><th>KPI</th><th>Current</th><th>Target</th><th>Status</th><th>Owner</th></tr></thead>
+      <tbody id="kpiTable"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="footer">SummitBridge Health Plan — Analytics Dashboard · Data period January–December 2024 · Cost metric: Allowed Amount · Source: claims, enrollment, providers, member_months, avoidable_ed_reference</div>
+
+<script>
+const DATA = {"total_claims": 5961, "total_allowed": 11321251.82, "total_members": 800, "total_member_months": 8462, "pmpm": 1337.89, "by_category": [{"service_category": "Behavioral Health", "claims": 480, "allowed": 84220.61, "members": 363}, {"service_category": "ED", "claims": 1209, "allowed": 1362281.73, "members": 560}, {"service_category": "Inpatient", "claims": 528, "allowed": 8631818.26, "members": 374}, {"service_category": "PCP", "claims": 2387, "allowed": 357410.25, "members": 755}, {"service_category": "Specialty Rx", "claims": 657, "allowed": 791233.42, "members": 407}, {"service_category": "Urgent Care", "claims": 700, "allowed": 94287.55, "members": 456}], "by_lob": [{"lob": "Commercial", "claims": 2504, "allowed": 4480145.69, "members": 349}, {"lob": "Marketplace", "claims": 2225, "allowed": 4230001.36, "members": 299}, {"lob": "Medicare Advantage", "claims": 1232, "allowed": 2611104.77, "members": 152}], "category_by_lob": [{"lob": "Commercial", "service_category": "Behavioral Health", "allowed_amount": 37968.4}, {"lob": "Commercial", "service_category": "ED", "allowed_amount": 618563.94}, {"lob": "Commercial", "service_category": "Inpatient", "allowed_amount": 3400019.88}, {"lob": "Commercial", "service_category": "PCP", "allowed_amount": 144676.18}, {"lob": "Commercial", "service_category": "Specialty Rx", "allowed_amount": 236147.02}, {"lob": "Commercial", "service_category": "Urgent Care", "allowed_amount": 42770.27}, {"lob": "Marketplace", "service_category": "Behavioral Health", "allowed_amount": 30159.15}, {"lob": "Marketplace", "service_category": "ED", "allowed_amount": 496647.01}, {"lob": "Marketplace", "service_category": "Inpatient", "allowed_amount": 3310145.09}, {"lob": "Marketplace", "service_category": "PCP", "allowed_amount": 138307.42}, {"lob": "Marketplace", "service_category": "Specialty Rx", "allowed_amount": 222957.52}, {"lob": "Marketplace", "service_category": "Urgent Care", "allowed_amount": 31785.17}, {"lob": "Medicare Advantage", "service_category": "Behavioral Health", "allowed_amount": 16093.06}, {"lob": "Medicare Advantage", "service_category": "ED", "allowed_amount": 247070.78}, {"lob": "Medicare Advantage", "service_category": "Inpatient", "allowed_amount": 1921653.29}, {"lob": "Medicare Advantage", "service_category": "PCP", "allowed_amount": 74426.65}, {"lob": "Medicare Advantage", "service_category": "Specialty Rx", "allowed_amount": 332128.88}, {"lob": "Medicare Advantage", "service_category": "Urgent Care", "allowed_amount": 19732.11}], "network": [{"in_network_flag": "N", "claims": 55, "allowed": 138734.48}, {"in_network_flag": "Y", "claims": 5906, "allowed": 11182517.34}], "hc_threshold": 43228.84, "hc_member_count": 40, "hc_total_allowed": 2317303.68, "hc_concentration_pct": 20.5, "hc_avg_spend": 57932.59, "all_avg_spend": 14151.56, "hc_by_category": [{"service_category": "Behavioral Health", "allowed_amount": 5837.32}, {"service_category": "ED", "allowed_amount": 91530.37}, {"service_category": "Inpatient", "allowed_amount": 1964692.69}, {"service_category": "PCP", "allowed_amount": 32478.32}, {"service_category": "Specialty Rx", "allowed_amount": 214052.2}, {"service_category": "Urgent Care", "allowed_amount": 8712.78}], "hc_avg_age": 58.7, "hc_avg_risk": 2.05, "hc_by_lob": [{"lob": "Marketplace", "count": 15}, {"lob": "Commercial", "count": 13}, {"lob": "Medicare Advantage", "count": 12}], "specialty_total": 791233.42, "specialty_claims": 657, "specialty_members": 407, "specialty_by_drug": [{"drug_name": "Pembrolizumab", "therapeutic_class": "Oncology Biologic", "claims": 175, "allowed": 337014.63, "members": 136}, {"drug_name": "Semaglutide", "therapeutic_class": "GLP-1 Agonist", "claims": 193, "allowed": 181625.17, "members": 157}, {"drug_name": "Insulin Glargine", "therapeutic_class": "Diabetes", "claims": 151, "allowed": 139784.03, "members": 137}, {"drug_name": "Adalimumab", "therapeutic_class": "Autoimmune Biologic", "claims": 138, "allowed": 132809.59, "members": 121}], "ed_total_claims": 1209, "ed_total_allowed": 1362281.73, "ed_avoidable_counts": [{"category": "Avoidable", "count": 613}, {"category": "Potentially Avoidable", "count": 301}, {"category": "Non-Avoidable", "count": 295}], "ed_avoidable_total_count": 914, "ed_avoidable_total_allowed": 1027583.79, "ed_avoidable_pct": 75.6, "uc_avg_allowed": 134.7, "ed_avoidable_avg_allowed": 1124.27, "savings_per_ed_shift": 989.57, "ed_top_diagnoses": [{"diagnosis_code_1": "J06.9", "avoidable_category": "Avoidable", "visits": 113, "allowed": 128142.62, "label": "Acute URI"}, {"diagnosis_code_1": "K21.9", "avoidable_category": "Avoidable", "visits": 111, "allowed": 126275.94, "label": "GERD"}, {"diagnosis_code_1": "M54.5", "avoidable_category": "Avoidable", "visits": 105, "allowed": 119498.44, "label": "Low Back Pain"}, {"diagnosis_code_1": "S09.90XA", "avoidable_category": "Potentially Avoidable", "visits": 105, "allowed": 117784.71, "label": "Head Injury, unsp"}, {"diagnosis_code_1": "F32.9", "avoidable_category": "Potentially Avoidable", "visits": 99, "allowed": 107565.0, "label": "Major Depressive D/O"}, {"diagnosis_code_1": "H66.90", "avoidable_category": "Avoidable", "visits": 98, "allowed": 110334.73, "label": "Otitis Media"}, {"diagnosis_code_1": "R10.9", "avoidable_category": "Avoidable", "visits": 98, "allowed": 109807.47, "label": "Abdominal Pain"}, {"diagnosis_code_1": "R51.9", "avoidable_category": "Potentially Avoidable", "visits": 97, "allowed": 108045.53, "label": "Headache"}, {"diagnosis_code_1": "N39.0", "avoidable_category": "Avoidable", "visits": 88, "allowed": 100129.35, "label": "Urinary Tract Infection"}], "bh_member_count": 363, "bh_total_allowed": 84220.61, "bh_avg_total": 14953.04, "non_bh_avg_total": 13485.81, "bh_ed_rate": 1.83, "non_bh_ed_rate": 1.24, "bh_ip_rate": 0.66, "non_bh_ip_rate": 0.66, "bh_specialty_rate": 0.85, "non_bh_specialty_rate": 0.79, "ip_total_admits": 528, "readmit_count": 32, "readmit_rate": 6.1, "readmit_by_lob": [{"lob": "Commercial", "total": 206, "readmits": 10, "rate": 4.9}, {"lob": "Marketplace", "total": 203, "readmits": 14, "rate": 6.9}, {"lob": "Medicare Advantage", "total": 119, "readmits": 8, "rate": 6.7}], "total_enrollment": 800, "disenrolled_count": 93, "disenroll_rate": 11.6, "disenroll_reasons": [{"reason": "Premium Affordability", "count": 26, "pct": 28.0}, {"reason": "Network Adequacy", "count": 25, "pct": 26.9}, {"reason": "Access Issues", "count": 15, "pct": 16.1}, {"reason": "Employer Change", "count": 14, "pct": 15.1}, {"reason": "Moved Out of Area", "count": 13, "pct": 14.0}], "disenroll_by_lob": [{"lob": "Commercial", "rate": 8.0}, {"lob": "Marketplace", "rate": 18.1}, {"lob": "Medicare Advantage", "rate": 7.2}], "disenroll_by_state": [{"state": "GA", "rate": 11.9}, {"state": "KY", "rate": 14.3}, {"state": "OH", "rate": 9.5}, {"state": "TN", "rate": 11.3}], "pmpm_disenrolled": 1769.9, "pmpm_retained": 1302.13, "pmpm_by_quality": [{"quality_score": 3.5, "members": 60, "avg_pmpm": 687.18, "risk_adj_pmpm": 482.1, "avg_risk": 1.82}, {"quality_score": 3.7, "members": 194, "avg_pmpm": 1396.99, "risk_adj_pmpm": 1027.5, "avg_risk": 1.84}, {"quality_score": 3.8, "members": 69, "avg_pmpm": 1554.78, "risk_adj_pmpm": 1116.89, "avg_risk": 1.89}, {"quality_score": 3.9, "members": 68, "avg_pmpm": 1556.4, "risk_adj_pmpm": 1080.54, "avg_risk": 1.9}, {"quality_score": 4.0, "members": 91, "avg_pmpm": 1409.44, "risk_adj_pmpm": 922.57, "avg_risk": 1.83}, {"quality_score": 4.1, "members": 124, "avg_pmpm": 1422.13, "risk_adj_pmpm": 958.44, "avg_risk": 1.92}, {"quality_score": 4.2, "members": 96, "avg_pmpm": 1353.18, "risk_adj_pmpm": 891.51, "avg_risk": 1.92}, {"quality_score": 4.3, "members": 91, "avg_pmpm": 1322.55, "risk_adj_pmpm": 972.26, "avg_risk": 1.64}], "network_adequacy": [{"state": "GA", "county": "Fulton", "member_count": 103, "provider_count": 1, "members_per_provider": 103.0}, {"state": "GA", "county": "Cherokee", "member_count": 91, "provider_count": 1, "members_per_provider": 91.0}, {"state": "OH", "county": "Franklin", "member_count": 112, "provider_count": 2, "members_per_provider": 56.0}, {"state": "OH", "county": "Cuyahoga", "member_count": 108, "provider_count": 2, "members_per_provider": 54.0}, {"state": "TN", "county": "Knox", "member_count": 77, "provider_count": 3, "members_per_provider": 25.7}, {"state": "KY", "county": "Jefferson", "member_count": 69, "provider_count": 3, "members_per_provider": 23.0}, {"state": "TN", "county": "Rural-Cannon", "member_count": 67, "provider_count": 3, "members_per_provider": 22.3}, {"state": "TN", "county": "Davidson", "member_count": 60, "provider_count": 3, "members_per_provider": 20.0}, {"state": "KY", "county": "Hardin", "member_count": 57, "provider_count": 3, "members_per_provider": 19.0}, {"state": "KY", "county": "Warren", "member_count": 56, "provider_count": 3, "members_per_provider": 18.7}], "oon_claims": 55, "oon_total_allowed": 138734.48, "oon_avg_allowed": 2522.45, "innet_avg_allowed": 1893.42, "oon_premium_pct": 33.2, "oon_pct_of_claims": 0.9, "oon_pct_of_allowed": 1.2}
+;
+
+const COLOR = {
+  blue:'#1670a8', blueDeep:'#0e4f7a', blueMid:'#2f8fc4', blueLight:'#bcdcee',
+  green:'#2ba178', greenDeep:'#1f7a5c', greenMid:'#6fc4a4',
+  amber:'#c9862c', red:'#b8433f', grey:'#9fb0bc'
+};
+const PALETTE = [COLOR.blue, COLOR.green, COLOR.blueMid, COLOR.greenMid, COLOR.amber, COLOR.red, COLOR.blueDeep, COLOR.greenDeep];
+
+Chart.defaults.font.family = "'Segoe UI', Arial, sans-serif";
+Chart.defaults.font.size = 11.5;
+Chart.defaults.color = '#4a5a68';
+Chart.defaults.plugins.legend.labels.boxWidth = 12;
+Chart.defaults.plugins.legend.labels.padding = 14;
+
+function money(n, d=0){
+  return '$' + Number(n).toLocaleString('en-US',{maximumFractionDigits:d, minimumFractionDigits:d});
+}
+function moneyShort(n){
+  if (Math.abs(n) >= 1e6) return '$'+(n/1e6).toFixed(2)+'M';
+  if (Math.abs(n) >= 1e3) return '$'+(n/1e3).toFixed(0)+'K';
+  return '$'+n.toFixed(0);
+}
+
+/* ---------------- NAV ---------------- */
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ---------------- KPI CARD BUILDER ---------------- */
+function kpiCard(container, {label, value, sub, tone='blue', badge}){
+  const div = document.createElement('div');
+  div.className = 'kpi-card ' + tone;
+  div.innerHTML = `
+    ${badge ? `<div class="kpi-badge badge-${badge.cls}">${badge.text}</div>` : ''}
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-value">${value}</div>
+    <div class="kpi-sub">${sub||''}</div>`;
+  container.appendChild(div);
+}
+
+/* ================= OVERVIEW ================= */
+const kpiOverview = document.getElementById('kpiOverview');
+kpiCard(kpiOverview,{label:'Total Allowed Spend', value: moneyShort(DATA.total_allowed), sub: DATA.total_claims.toLocaleString()+' claims · 800 members', tone:'blue'});
+kpiCard(kpiOverview,{label:'Plan-Wide PMPM', value: money(DATA.pmpm,2), sub: DATA.total_member_months.toLocaleString()+' member months', tone:'green'});
+kpiCard(kpiOverview,{label:'High-Cost Concentration', value: DATA.hc_concentration_pct+'%', sub:'Top 5% of members · target <15%', tone:'amber', badge:{cls:'watch',text:'WATCH'}});
+kpiCard(kpiOverview,{label:'Avoidable ED Rate', value: DATA.ed_avoidable_pct+'%', sub:'Target <60%', tone:'red', badge:{cls:'red',text:'ABOVE TARGET'}});
+kpiCard(kpiOverview,{label:'Annual Disenrollment', value: DATA.disenroll_rate+'%', sub:'Target <8%', tone:'red', badge:{cls:'red',text:'ABOVE TARGET'}});
+kpiCard(kpiOverview,{label:'Out-of-Network Spend', value: DATA.oon_pct_of_allowed+'%', sub:'Target <1% of allowed', tone:'amber', badge:{cls:'watch',text:'WATCH'}});
+kpiCard(kpiOverview,{label:'30-Day Readmission Rate', value: DATA.readmit_rate+'%', sub:'Target <12%', tone:'green', badge:{cls:'ontrack',text:'ON TRACK'}});
+kpiCard(kpiOverview,{label:'Specialty Pharmacy Spend', value: moneyShort(DATA.specialty_total), sub: (DATA.specialty_total/DATA.total_allowed*100).toFixed(1)+'% of total spend', tone:'blue'});
+
+const catColors = {'Inpatient':COLOR.blueDeep,'ED':COLOR.red,'Specialty Rx':COLOR.green,'PCP':COLOR.blueMid,'Urgent Care':COLOR.greenMid,'Behavioral Health':COLOR.amber};
+const catSorted = [...DATA.by_category].sort((a,b)=>b.allowed-a.allowed);
+new Chart(document.getElementById('chartCategory'),{
+  type:'doughnut',
+  data:{labels:catSorted.map(c=>c.service_category),
+    datasets:[{data:catSorted.map(c=>c.allowed), backgroundColor:catSorted.map(c=>catColors[c.service_category]), borderWidth:2, borderColor:'#fff'}]},
+  options:{plugins:{legend:{position:'right'}, tooltip:{callbacks:{label:(ctx)=>ctx.label+': '+money(ctx.raw)}}}, cutout:'58%'}
+});
+
+new Chart(document.getElementById('chartLob'),{
+  type:'bar',
+  data:{labels:DATA.by_lob.map(l=>l.lob),
+    datasets:[{label:'Allowed Amount', data:DATA.by_lob.map(l=>l.allowed), backgroundColor:[COLOR.blue,COLOR.green,COLOR.blueMid], borderRadius:6}]},
+  options:{plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},
+    scales:{y:{ticks:{callback:v=>moneyShort(v)}, grid:{color:'#eef2f5'}}, x:{grid:{display:false}}}}
+});
+
+const lobList = ['Commercial','Marketplace','Medicare Advantage'];
+const catList = ['Inpatient','ED','Specialty Rx','PCP','Urgent Care','Behavioral Health'];
+function stackDataset(cat, color){
+  return {
+    label:cat, backgroundColor:color, borderRadius:4,
+    data: lobList.map(lob=>{
+      const rec = DATA.category_by_lob.find(r=>r.lob===lob && r.service_category===cat);
+      return rec ? rec.allowed_amount : 0;
+    })
+  };
+}
+new Chart(document.getElementById('chartStack'),{
+  type:'bar',
+  data:{labels:lobList, datasets:catList.map(c=>stackDataset(c,catColors[c]))},
+  options:{plugins:{tooltip:{callbacks:{label:(ctx)=>ctx.dataset.label+': '+money(ctx.raw)}}},
+    scales:{x:{stacked:true, grid:{display:false}}, y:{stacked:true, ticks:{callback:v=>moneyShort(v)}, grid:{color:'#eef2f5'}}}}
+});
+
+/* ---- LOB filter wiring (re-scales spend cards + category donut) ---- */
+document.getElementById('lobFilter').addEventListener('change', function(){
+  const val = this.value;
+  let rows;
+  if (val==='all'){ rows = DATA.by_category; document.getElementById('catSpan').textContent=''; }
+  else {
+    rows = catList.map(c=>{
+      const rec = DATA.category_by_lob.find(r=>r.lob===val && r.service_category===c);
+      return {service_category:c, allowed: rec? rec.allowed_amount : 0};
+    });
+    document.getElementById('catSpan').textContent = 'Filtered: '+val;
+  }
+  const sorted = [...rows].sort((a,b)=>b.allowed-a.allowed).filter(r=>r.allowed>0);
+  const chart = Chart.getChart('chartCategory');
+  chart.data.labels = sorted.map(c=>c.service_category);
+  chart.data.datasets[0].data = sorted.map(c=>c.allowed);
+  chart.data.datasets[0].backgroundColor = sorted.map(c=>catColors[c.service_category]);
+  chart.update();
+});
+
+/* ---- Apply / Reset wiring for new filter controls ---- */
+document.getElementById('applyFiltersBtn').addEventListener('click', function(){
+  document.getElementById('lobFilter').dispatchEvent(new Event('change'));
+});
+document.getElementById('resetFiltersBtn').addEventListener('click', function(){
+  document.getElementById('lobFilter').value = 'all';
+  document.getElementById('stateFilter').value = 'all';
+  document.getElementById('categoryFilter').value = 'all';
+  document.getElementById('dateFilter').value = 'all';
+  document.getElementById('lobFilter').dispatchEvent(new Event('change'));
+});
+
+/* ================= HIGH COST ================= */
+const kpiHc = document.getElementById('kpiHighCost');
+kpiCard(kpiHc,{label:'High-Cost Threshold (95th %ile)', value: money(DATA.hc_threshold), sub:'Annual allowed spend cutoff', tone:'blue'});
+kpiCard(kpiHc,{label:'High-Cost Members', value: DATA.hc_member_count, sub:'5% of 800 members', tone:'blue'});
+kpiCard(kpiHc,{label:'High-Cost Total Allowed', value: moneyShort(DATA.hc_total_allowed), sub: DATA.hc_concentration_pct+'% of total spend', tone:'amber'});
+kpiCard(kpiHc,{label:'Avg. High-Cost Member Spend', value: moneyShort(DATA.hc_avg_spend), sub:'vs. '+moneyShort(DATA.all_avg_spend)+' plan average', tone:'green'});
+
+new Chart(document.getElementById('chartHcShare'),{
+  type:'pie',
+  data:{labels:['Top 5% (High-Cost)','Remaining 95%'],
+    datasets:[{data:[DATA.hc_total_allowed, DATA.total_allowed-DATA.hc_total_allowed], backgroundColor:[COLOR.blueDeep,COLOR.blueLight], borderWidth:2, borderColor:'#fff'}]},
+  options:{plugins:{tooltip:{callbacks:{label:(ctx)=>ctx.label+': '+money(ctx.raw)+' ('+(ctx.raw/DATA.total_allowed*100).toFixed(1)+'%)'}}}}
+});
+
+const hcCatSorted = [...DATA.hc_by_category].sort((a,b)=>b.allowed_amount-a.allowed_amount);
+new Chart(document.getElementById('chartHcCat'),{
+  type:'bar',
+  data:{labels:hcCatSorted.map(c=>c.service_category),
+    datasets:[{label:'High-Cost Allowed', data:hcCatSorted.map(c=>c.allowed_amount), backgroundColor:COLOR.green, borderRadius:5}]},
+  options:{indexAxis:'y', plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},
+    scales:{x:{ticks:{callback:v=>moneyShort(v)}, grid:{color:'#eef2f5'}}, y:{grid:{display:false}}}}
+});
+
+const drugSorted = [...DATA.specialty_by_drug].sort((a,b)=>b.allowed-a.allowed);
+new Chart(document.getElementById('chartDrug'),{
+  type:'bar',
+  data:{labels:drugSorted.map(d=>d.drug_name),
+    datasets:[{label:'Total Allowed', data:drugSorted.map(d=>d.allowed), backgroundColor:PALETTE, borderRadius:5}]},
+  options:{plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},
+    scales:{y:{ticks:{callback:v=>moneyShort(v)}, grid:{color:'#eef2f5'}}, x:{grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('chartSpecSavings'),{
+  type:'bar',
+  data:{labels:['−5%','−10%','−15%'],
+    datasets:[{label:'Annual Savings', data:[DATA.specialty_total*0.05, DATA.specialty_total*0.10, DATA.specialty_total*0.15], backgroundColor:[COLOR.blueLight,COLOR.blueMid,COLOR.blueDeep], borderRadius:6}]},
+  options:{plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},
+    scales:{y:{ticks:{callback:v=>moneyShort(v)}, grid:{color:'#eef2f5'}}, x:{grid:{display:false}}}}
+});
+
+const drugTable = document.getElementById('drugTable');
+drugSorted.forEach(d=>{
+  drugTable.innerHTML += `<tr><td>${d.drug_name}</td><td>${d.therapeutic_class}</td><td>${d.claims}</td><td>${d.members}</td><td>${money(d.allowed)}</td><td>${money(d.allowed/d.claims,0)}</td></tr>`;
+});
+
+/* ================= UTILIZATION ================= */
+const kpiEd = document.getElementById('kpiEd');
+kpiCard(kpiEd,{label:'Total ED Visits', value: DATA.ed_total_claims.toLocaleString(), sub: money(DATA.ed_total_allowed)+' total allowed', tone:'blue'});
+kpiCard(kpiEd,{label:'Avoidable + Potentially Avoidable', value: DATA.ed_avoidable_pct+'%', sub: DATA.ed_avoidable_total_count+' of '+DATA.ed_total_claims+' visits', tone:'red', badge:{cls:'red',text:'PRIORITY'}});
+kpiCard(kpiEd,{label:'Savings per Redirected Visit', value: money(DATA.savings_per_ed_shift), sub: money(DATA.ed_avoidable_avg_allowed)+' ED vs '+money(DATA.uc_avg_allowed)+' urgent care', tone:'green'});
+kpiCard(kpiEd,{label:'30-Day Readmission Rate', value: DATA.readmit_rate+'%', sub: DATA.readmit_count+' of '+DATA.ip_total_admits+' inpatient admits', tone:'green', badge:{cls:'ontrack',text:'ON TRACK'}});
+
+new Chart(document.getElementById('chartEdCat'),{
+  type:'doughnut',
+  data:{labels:DATA.ed_avoidable_counts.map(c=>c.category),
+    datasets:[{data:DATA.ed_avoidable_counts.map(c=>c.count), backgroundColor:[COLOR.red,COLOR.amber,COLOR.green], borderWidth:2, borderColor:'#fff'}]},
+  options:{cutout:'55%', plugins:{legend:{position:'right'}}}
+});
+
+new Chart(document.getElementById('chartEdVsUc'),{
+  type:'bar',
+  data:{labels:['Emergency Department (Avoidable)','Urgent Care'],
+    datasets:[{label:'Avg Allowed per Visit', data:[DATA.ed_avoidable_avg_allowed, DATA.uc_avg_allowed], backgroundColor:[COLOR.red,COLOR.green], borderRadius:6}]},
+  options:{plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},
+    scales:{y:{ticks:{callback:v=>moneyShort(v)}, grid:{color:'#eef2f5'}}, x:{grid:{display:false}}}}
+});
+
+const dxSorted = [...DATA.ed_top_diagnoses].sort((a,b)=>b.visits-a.visits);
+new Chart(document.getElementById('chartTopDx'),{
+  type:'bar',
+  data:{labels:dxSorted.map(d=>d.label+' ('+d.diagnosis_code_1+')'),
+    datasets:[{label:'Visits', data:dxSorted.map(d=>d.visits), backgroundColor:COLOR.blueMid, borderRadius:5}]},
+  options:{indexAxis:'y', plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:'#eef2f5'}}, y:{grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('chartBh'),{
+  type:'bar',
+  data:{labels:['ED Visits / Member','Inpatient Admits / Member','Specialty Rx Claims / Member'],
+    datasets:[
+      {label:'Members with BH claim', data:[DATA.bh_ed_rate, DATA.bh_ip_rate, DATA.bh_specialty_rate], backgroundColor:COLOR.amber, borderRadius:5},
+      {label:'Members without BH claim', data:[DATA.non_bh_ed_rate, DATA.non_bh_ip_rate, DATA.non_bh_specialty_rate], backgroundColor:COLOR.blueLight, borderRadius:5}
+    ]},
+  options:{scales:{y:{grid:{color:'#eef2f5'}}, x:{grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('chartReadmit'),{
+  type:'bar',
+  data:{labels:DATA.readmit_by_lob.map(r=>r.lob),
+    datasets:[{label:'Readmission Rate %', data:DATA.readmit_by_lob.map(r=>r.rate), backgroundColor:[COLOR.blue,COLOR.green,COLOR.blueMid], borderRadius:6}]},
+  options:{plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>ctx.raw+'%'}}},
+    scales:{y:{ticks:{callback:v=>v+'%'}, grid:{color:'#eef2f5'}}, x:{grid:{display:false}}}}
+});
+
+/* ================= RETENTION ================= */
+const kpiRet = document.getElementById('kpiRetention');
+kpiCard(kpiRet,{label:'Annual Disenrollment Rate', value: DATA.disenroll_rate+'%', sub: DATA.disenrolled_count+' of '+DATA.total_enrollment+' members', tone:'red', badge:{cls:'red',text:'ABOVE TARGET'}});
+kpiCard(kpiRet,{label:'Cost/Access-Driven Exits', value: (DATA.disenroll_reasons[0].pct+DATA.disenroll_reasons[1].pct+DATA.disenroll_reasons[2].pct).toFixed(1)+'%', sub:'Premium, network & access combined', tone:'amber'});
+kpiCard(kpiRet,{label:'PMPM — Disenrolled Members', value: money(DATA.pmpm_disenrolled,0), sub:'vs '+money(DATA.pmpm_retained,0)+' retained members', tone:'blue'});
+kpiCard(kpiRet,{label:'Out-of-Network Cost Premium', value: '+'+DATA.oon_premium_pct+'%', sub: money(DATA.oon_avg_allowed,0)+' OON vs '+money(DATA.innet_avg_allowed,0)+' in-network', tone:'amber'});
+
+const reasonSorted=[...DATA.disenroll_reasons].sort((a,b)=>b.count-a.count);
+new Chart(document.getElementById('chartDisenrollReason'),{
+  type:'bar',
+  data:{labels:reasonSorted.map(r=>r.reason),
+    datasets:[{label:'Members', data:reasonSorted.map(r=>r.count), backgroundColor:PALETTE, borderRadius:5}]},
+  options:{indexAxis:'y', plugins:{legend:{display:false}},
+    scales:{x:{grid:{color:'#eef2f5'}}, y:{grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('chartDisenrollLob'),{
+  type:'bar',
+  data:{labels:DATA.disenroll_by_lob.map(r=>r.lob),
+    datasets:[{label:'Disenrollment Rate %', data:DATA.disenroll_by_lob.map(r=>r.rate), backgroundColor:[COLOR.blue,COLOR.red,COLOR.green], borderRadius:6}]},
+  options:{plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>ctx.raw+'%'}}},
+    scales:{y:{ticks:{callback:v=>v+'%'}, grid:{color:'#eef2f5'}}, x:{grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('chartDisenrollState'),{
+  type:'bar',
+  data:{labels:DATA.disenroll_by_state.map(r=>r.state),
+    datasets:[{label:'Disenrollment Rate %', data:DATA.disenroll_by_state.map(r=>r.rate), backgroundColor:COLOR.greenMid, borderRadius:5}]},
+  options:{plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>ctx.raw+'%'}}},
+    scales:{y:{ticks:{callback:v=>v+'%'}, grid:{color:'#eef2f5'}}, x:{grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('chartPmpmDisenroll'),{
+  type:'bar',
+  data:{labels:['Disenrolled Members','Retained Members'],
+    datasets:[{label:'PMPM', data:[DATA.pmpm_disenrolled, DATA.pmpm_retained], backgroundColor:[COLOR.red,COLOR.green], borderRadius:6}]},
+  options:{plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>money(ctx.raw,2)}}},
+    scales:{y:{ticks:{callback:v=>moneyShort(v)}, grid:{color:'#eef2f5'}}, x:{grid:{display:false}}}}
+});
+
+const netSorted=[...DATA.network_adequacy].sort((a,b)=>b.members_per_provider-a.members_per_provider);
+new Chart(document.getElementById('chartNetwork'),{
+  type:'bar',
+  data:{labels:netSorted.map(n=>n.county+', '+n.state),
+    datasets:[{label:'Members per Provider', data:netSorted.map(n=>n.members_per_provider), backgroundColor:COLOR.blueDeep, borderRadius:5}]},
+  options:{plugins:{legend:{display:false}},
+    scales:{y:{grid:{color:'#eef2f5'}}, x:{grid:{display:false}}}}
+});
+
+/* ================= QUALITY ================= */
+const qSorted=[...DATA.pmpm_by_quality].sort((a,b)=>a.quality_score-b.quality_score);
+new Chart(document.getElementById('chartQualityRaw'),{
+  type:'line',
+  data:{labels:qSorted.map(q=>q.quality_score),
+    datasets:[{label:'Raw PMPM', data:qSorted.map(q=>q.avg_pmpm), borderColor:COLOR.blue, backgroundColor:COLOR.blueLight, fill:true, tension:0.35, pointRadius:4, pointBackgroundColor:COLOR.blue}]},
+  options:{plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>money(ctx.raw,0)}}},
+    scales:{y:{ticks:{callback:v=>moneyShort(v)}, grid:{color:'#eef2f5'}}, x:{title:{display:true,text:'PCP Quality Score'}, grid:{display:false}}}}
+});
+new Chart(document.getElementById('chartQualityAdj'),{
+  type:'line',
+  data:{labels:qSorted.map(q=>q.quality_score),
+    datasets:[{label:'Risk-Adjusted PMPM', data:qSorted.map(q=>q.risk_adj_pmpm), borderColor:COLOR.green, backgroundColor:'#e6f6f0', fill:true, tension:0.35, pointRadius:4, pointBackgroundColor:COLOR.green}]},
+  options:{plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>money(ctx.raw,0)}}},
+    scales:{y:{ticks:{callback:v=>moneyShort(v)}, grid:{color:'#eef2f5'}}, x:{title:{display:true,text:'PCP Quality Score'}, grid:{display:false}}}}
+});
+
+const qualityTable=document.getElementById('qualityTable');
+qSorted.forEach(q=>{
+  qualityTable.innerHTML += `<tr><td>${q.quality_score}</td><td>${q.members}</td><td>${q.avg_risk}</td><td>${money(q.avg_pmpm,0)}</td><td>${money(q.risk_adj_pmpm,0)}</td></tr>`;
+});
+
+/* ================= SAVINGS + KPI ================= */
+new Chart(document.getElementById('chartSavingsBreakdown'),{
+  type:'bar',
+  data:{labels:['Specialty Rx (−12%)','ED Diversion (30%)','High-Cost Care Mgmt (−10%)','Readmission Prevention (−25%)','OON Recovery (−50%)'],
+    datasets:[{label:'Annual Savings', data:[94948,271341,231730,68000,69367], backgroundColor:[COLOR.blue,COLOR.red,COLOR.amber,COLOR.green,COLOR.blueMid], borderRadius:6}]},
+  options:{plugins:{legend:{display:false}, tooltip:{callbacks:{label:(ctx)=>money(ctx.raw)}}},
+    scales:{y:{ticks:{callback:v=>moneyShort(v)}, grid:{color:'#eef2f5'}}, x:{grid:{display:false}}}}
+});
+
+const KPIS = [
+ ['High-Cost Claimants','High-Cost Member Concentration', DATA.hc_concentration_pct+'%', '<15%', 'watch', 'Care Management'],
+ ['High-Cost Claimants','High-Cost Member Count', DATA.hc_member_count, 'Reduce 10% YoY', 'watch', 'Care Management'],
+ ['High-Cost Claimants','Avg. High-Cost Member Spend', moneyShort(DATA.hc_avg_spend), '<$50,000', 'watch', 'Care Management'],
+ ['Specialty Pharmacy','Specialty Rx % of Total Spend', (DATA.specialty_total/DATA.total_allowed*100).toFixed(1)+'%', 'Reduce 10% YoY', 'ontrack', 'Pharmacy Benefits'],
+ ['Specialty Pharmacy','Specialty Rx Members', DATA.specialty_members, 'Monitor growth', 'ontrack', 'Pharmacy Benefits'],
+ ['ED Utilization','ED Visits (Total)', DATA.ed_total_claims, 'Reduce trend', 'watch', 'Utilization Mgmt'],
+ ['ED Utilization','Avoidable ED Visit Rate', DATA.ed_avoidable_pct+'%', '<60%', 'red', 'Utilization Mgmt'],
+ ['ED Utilization','ED-to-Urgent-Care Shift Rate', '0% (baseline)', '20% Year 1', 'red', 'Care Management'],
+ ['Behavioral Health','BH Member ED Rate (per member)', DATA.bh_ed_rate, 'Reduce 15% YoY', 'watch', 'Behavioral Health'],
+ ['Behavioral Health','BH Member Total Allowed (avg)', moneyShort(DATA.bh_avg_total), 'Reduce gap vs non-BH', 'watch', 'Behavioral Health'],
+ ['Readmissions','30-Day All-Cause Readmission Rate', DATA.readmit_rate+'%', '<12%', 'ontrack', 'Care Transitions'],
+ ['Readmissions','Total Inpatient Admissions', DATA.ip_total_admits, 'Monitor trend', 'ontrack', 'Care Transitions'],
+ ['OON Leakage','Out-of-Network Allowed %', DATA.oon_pct_of_allowed+'%', '<1%', 'watch', 'Network Management'],
+ ['OON Leakage','OON Cost Premium', '+'+DATA.oon_premium_pct+'%', '<15%', 'red', 'Network Management'],
+ ['Member Retention','Annual Disenrollment Rate', DATA.disenroll_rate+'%', '<8%', 'red', 'Member Experience'],
+ ['Member Retention','Cost/Access-Driven Disenrollment %', (DATA.disenroll_reasons[0].pct+DATA.disenroll_reasons[1].pct+DATA.disenroll_reasons[2].pct).toFixed(1)+'%', '<40%', 'red', 'Member Experience'],
+ ['Provider Quality','Risk-Adjusted PMPM Range (Q1 vs Q4)', (Math.max(...qSorted.map(q=>q.risk_adj_pmpm))/Math.min(...qSorted.map(q=>q.risk_adj_pmpm))).toFixed(2)+'x', '<1.4x', 'red', 'Provider Performance'],
+ ['Network Adequacy','Members per Provider (worst county)', Math.max(...DATA.network_adequacy.map(n=>n.members_per_provider)), '<1,500:1', 'red', 'Network Management'],
+ ['Financial','Total Medical PMPM', money(DATA.pmpm,2), '<5% YoY trend', 'ontrack', 'Actuarial/Finance'],
+ ['Financial','Total Allowed Spend', moneyShort(DATA.total_allowed), 'Monitor trend', 'ontrack', 'Actuarial/Finance'],
+];
+const badgeMap = {ontrack:['tag-green','ON TRACK'], watch:['tag-amber','WATCH'], red:['tag-red','CRITICAL']};
+const kpiTable=document.getElementById('kpiTable');
+KPIS.forEach(k=>{
+  const b = badgeMap[k[4]];
+  kpiTable.innerHTML += `<tr><td>${k[0]}</td><td>${k[1]}</td><td><b>${k[2]}</b></td><td>${k[3]}</td><td><span class="tag ${b[0]}">${b[1]}</span></td><td>${k[5]}</td></tr>`;
+});
+</script>
+</body>
+</html>
