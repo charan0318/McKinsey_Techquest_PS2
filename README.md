@@ -65,22 +65,6 @@ python src/savings_model.py --scenario combined --spec-pct 10 --ed-pct 20
 | Annual Disenrollment Rate | 11.6% | <8% |
 | Total Medical PMPM | $1,337.89 | <5% YoY trend |
 
-## Project Progress
-
-### Completed
-- `01_business_understanding/` - case framing, stakeholders, success criteria
-- `02_data_dictionary/` - source tables and derived table specs
-- `03_data_quality/` - framework, reports, remediation log
-- `04_exploratory_analysis/01_claims_overview.ipynb` - claims overview notebook
-- `src/` - reusable data loading, KPI, savings, and utility modules
-
-### Pending
-- `04_exploratory_analysis/` - remaining 7 analysis notebooks
-- `05_kpi_models/` - KPI calculations, dashboard, baseline report
-- `06_savings_models/` - scenario notebooks and combined portfolio view
-- `07_dashboard/` - executive, operational, financial, and provider dashboards
-- `08_documentation/` - implementation roadmap, governance model, glossary
-
 ## Savings Opportunity: $500K - $1.2M Annually (4.4% - 10.6% of spend)
 
 | Intervention | Annual Savings | Timeline |

@@ -1,0 +1,44 @@
+# Data files (large, contain PHI/PII)
+data/raw/*.xlsx
+data/raw/*.csv
+data/processed/*.csv
+data/processed/*.parquet
+data/reference/*.csv
+
+# Jupyter outputs
+.ipynb_checkpoints/
+*.ipynb~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment
+.env
+.venv
+venv/
+env/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+analysis_part2.py
+summitbridge_analytics_old.ipynb
