@@ -28,7 +28,6 @@ summitbridge-analytics/
 │   ├── kpi_calculator.py
 │   ├── savings_model.py
 │   └── utils.py
-├── notebooks/                    # Symlinks to analysis notebooks
 ├── requirements.txt
 └── README.md
 ```
