@@ -1,0 +1,22 @@
+domain,kpi,definition,current,target,frequency,owner
+High-Cost Claimants,High-Cost Member Concentration,Top 5% members' share of total allowed spend,20.5%,<15%,Monthly,Care Management
+High-Cost Claimants,High-Cost Member Count,Number of members in top 5% by allowed spend,40,Reduce by 10% YoY,Monthly,Care Management
+Specialty Pharmacy,Specialty Rx PMPM,Specialty pharmacy allowed amount per member per month,$93.50,Reduce 10% YoY,Monthly,Pharmacy Benefits
+Specialty Pharmacy,Specialty Rx Prior Auth Approval Rate,% of specialty PA requests approved,N/A (baseline needed),85-90% (appropriate use),Monthly,Pharmacy Benefits
+ED Utilization,"ED Visits per 1,000 Member Months","(ED claims / member months) × 1,000",142.9,<45,Monthly,Utilization Management
+ED Utilization,Avoidable ED Visit Rate,% of ED visits classified as Avoidable or Potentially Avoidable,75.6%,<60%,Monthly,Utilization Management
+ED Utilization,ED-to-Urgent Care Shift Rate,% of avoidable ED visits redirected to UC/telehealth,0% (baseline),"20% Year 1, 35% Year 2",Monthly,Care Management
+ED Utilization,PCP Visit Within 7 Days Post-ED,% of ED visits followed by PCP visit within 7 days,N/A (baseline needed),>50%,Monthly,Care Management
+Behavioral Health,BH Member ED Visit Rate,"ED visits per 1,000 for members with BH claims",1834.7,Reduce 15% YoY,Quarterly,Behavioral Health
+Behavioral Health,BH Member IP Admission Rate,"IP admits per 1,000 for members with BH claims",661.2,Reduce 15% YoY,Quarterly,Behavioral Health
+Behavioral Health,Follow-up Within 7 Days Post-BH Crisis,% of BH crisis events with follow-up within 7 days,N/A (baseline needed),>60%,Monthly,Behavioral Health
+Readmissions,30-Day All-Cause Readmission Rate,% of IP admissions with readmission within 30 days,6.1%,<12%,Monthly,Care Transitions
+Readmissions,Post-Discharge PCP Visit Within 7 Days,% of discharges with PCP follow-up within 7 days,N/A (baseline needed),>70%,Monthly,Care Transitions
+OON Leakage,Out-of-Network Allowed %,OON allowed amount as % of total allowed,1.2%,<1%,Monthly,Network Management
+OON Leakage,Network Adequacy - Members per Provider,Ratio of members to in-network providers by county/specialty,24:1 (median),"<1,500:1 PCP; <3,000:1 Specialist",Quarterly,Network Management
+Member Retention,Annual Disenrollment Rate,% of members disenrolling annually,11.6%,<8%,Monthly,Member Experience
+Member Retention,Disenrollment Due to Cost/Access,"% of disenrollments citing Premium Affordability, Network Adequacy, or Access Issues",71.0%,<40% of disenrollments,Monthly,Member Experience
+Member Retention,Cost Transparency Tool Adoption,% of members using cost estimator tool,0% (not implemented),>25% Year 1,Quarterly,Digital/Marketing
+Provider Quality,Member PMPM by PCP Quality Quartile,Risk-adjusted PMPM for members attributed to PCPs by quality score quartile,See analysis above,Reduce gap between top/bottom quartile by 20%,Quarterly,Provider Performance
+Financial,Total Medical PMPM,Total allowed amount per member per month,$1337.89,Medical cost trend <5% YoY,Monthly,Actuarial/Finance
+Financial,Medical Loss Ratio (MLR),Medical claims paid / premium revenue,N/A (premium data needed),"85-88% (Commercial), 88-90% (MA)",Monthly,Actuarial/Finance
